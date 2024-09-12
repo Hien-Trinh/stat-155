@@ -1,3 +1,12 @@
+---
+title: "Practice Problems 1"
+author: "David Trinh"
+format:
+  html:
+    embed-resources: true
+    code-tools: true    
+---
+
 <center>
 **Due Friday, 9/13 at 5pm on [Moodle](INSERT_LINK_TO_MOODLE_ASSIGNMENT).**
 </center>
@@ -156,10 +165,6 @@ ggplot(bechdel, aes(x = clean_test)) +
          x = "Bechdel Test Category",
          y = "Count")
 
-bechdel %>%
-group_by
-select(clean_test)
-
 num_ok <- bechdel %>%
     filter(clean_test == "ok") %>%
     nrow()
@@ -173,7 +178,7 @@ no_talk <- bechdel %>%
 no_talk / nrow(bechdel)
 ```
 
-The majority of movies in the dataset did not pass the Bechdel test (44.76%). In the same vein, the majority of movies failed belong to the no talk category (28.56%)
+The majority of movies in the dataset did not pass the Bechdel test (44.76%). In the same vein, the majority of movies failed belong to the no talk category (28.56%).
 
 ## Exercise 4: How much money did it make?
 
@@ -181,11 +186,32 @@ The `intgross_mil` variable records each movie's total international gross, in m
 
 a. Construct a visualization of the `intgross_mil` variable. Summarize your findings as if you were writing a newspaper article about movies.
 
+```{r}
+ggplot(bechdel, aes(y = intgross_mil)) +
+    geom_boxplot() +
+    labs(y = "Gross by all films in millions of 2013 dollars")
+```
+
+
+
 b. Calculate the mean and median values of `intgross_mil`. Explain why the mean exceeds the median by quite a bit *and* which is the more appropriate measure of trend here.
     - NOTE: Since some films are missing information on `intgross_mil`, you'll need to use `mean(___, na.rm = TRUE)` where `na.rm = TRUE` says to remove the NA (missing) values from the calculation. Similarly for the median.
+    
+```{r}
+mean(bechdel$intgross_mil, na.rm = TRUE)
+median(bechdel$intgross_mil, na.rm = TRUE)
+```
+
+The mean exceeds the median because of the uneven distribution of gross. In this case, few outliers at the high end with extremely high gross pull the average up. Whereas the majority of films hover around the bottom with below average gross.
 
 c. Calculate the standard deviations for the `intgross_mil` and `budget_mil` variables. Comment on whether there's more variability among how much money is spent *making* movies (budgets) or how much money a movie makes (grosses)?
 
+```{r}
+ggplot(bechdel, aes(x = budget_mil, y = intgross_mil)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Budget in millions of 2013 dollars", y = "Gross in millions of 2013 dollars")
+```
 
 
 ## Exercise 5: Explaining `intgross_mil`
