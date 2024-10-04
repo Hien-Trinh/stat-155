@@ -1,0 +1,206 @@
+---
+title: "Practice Problems 3"
+author: "David Trinh"
+date: now
+date-format: "YYYY-MM-DDTHH:mm:ssZ"
+format:
+  html:
+    embed-resources: true
+    code-tools: true    
+---
+
+<center>
+**Due Friday, 10/4 at 5pm on [Moodle](INSERT_LINK_TO_MOODLE_ASSIGNMENT).**
+</center>
+
+# Purpose
+
+The goal of this set of practice problems is to practice the following skills:
+
+- Building appropriate multiple linear regression models to address research questions
+- Interpreting linear regression model results with a mix of quantitative and categorical predictors
+
+
+
+
+# Directions
+
+1. Create a code chunk in which you load the `ggplot2`, `dplyr`, and `readr` packages. Include the following command in the code chunk to read in the data: `lifts <- read_csv("https://mac-stat.github.io/data/powerlifting.csv")`
+
+2. Continue with the exercises below. You will need to create new code chunks to construct visualizations and models and write interpretations beneath. Put text responses in blockquotes as shown below:
+
+> Response here. (The > at the start of the line starts a blockquote and makes the text larger and easier to read.)
+
+3. Render your work for submission:
+    - Click the "Render" button in the menu bar for this pane (blue arrow pointing right). This will create an HTML file containing all of the directions, code, and responses from this activity. A preview of the HTML will appear in the browser.
+    - Scroll through and inspect the document to check that your work translated to the HTML format correctly.
+    - Close the browser tab.
+    - Go to the "Background Jobs" pane in RStudio and click the Stop button to end the rendering process.
+    - Locate the rendered HTML file in the folder where this file is saved. Open the HTML to ensure that your work looks as it should (code appears, output displays, interpretations appear). Upload this HTML file to Moodle.
+
+
+
+# Exercises
+
+## Context
+
+Powerlifting is a sport in which athletes compete to lift as much as possible in 3 events: bench press, squat, and deadlift.
+
+[Open Powerlifting](https://www.openpowerlifting.org/) maintains a database of competition results for powerlifters across the world. We have information on 100,000 lifters from this database. Take a look at the codebook [here](https://github.com/Mac-STAT/data/blob/main/powerlifting_codebook.md).
+
+Research question: Are lighter or heavier lifters proportionately stronger?
+
+```{r}
+# Load packages and import data
+library(readr)
+library(ggplot2)
+library(dplyr)
+
+lifts <- read_csv("https://mac-stat.github.io/data/powerlifting.csv")
+```
+
+## Exercise 1: Define outcome variable
+
+Use the `mutate()` function from the `dplyr` to define an outcome variable called `SWR` that stands for strength-to-weight ratio. It should be computed as `TotalKg` divided by `BodyweightKg`. `SWR` measures how many times their bodyweight an athlete can lift in total. Higher numbers indicate higher relative strength.
+
+```{r}
+lifts <- lifts %>%
+  mutate(SWR = TotalKg / BodyweightKg)
+
+head(lifts)
+```
+
+
+## Exercise 2: Exploratory visualizations
+
+**Guiding question:** How are age, sex, bodyweight, and equipment usage related to strength?
+
+Construct one visualization for each of these 4 explanatory variables and `SWR`. For each, write 1-2 sentences summarizing what you learn from the plot. Be sure to discuss trend, variability/dispersion about the trend, and any notable outliers.
+
+```{r}
+# Age
+lifts %>%
+  ggplot(aes(x = Age, y = SWR)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+> There is a weak downward trend in SWR as age increases. There is a lot of variability in SWR for younger lifters, but less variability for older lifters. There are a few outliers of older lifters with high SWR.
+
+```{r}
+# Sex
+lifts %>%
+  ggplot(aes(x = Sex, y = SWR)) +
+  geom_boxplot()
+```
+
+> There is a difference in SWR between M, F, and other. Notably, M has the highest median SWR and other has the lowest. There is more variability in SWR for M than for F and other. There are a few outliers of M lifters with very high SWR. There are a lot of outliers of F lifters with high SWR.
+
+```{r}
+# Bodyweight
+lifts %>%
+  ggplot(aes(x = BodyweightKg, y = SWR)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+> There is a weak downward trend in SWR as bodyweight increases. There is a lot of variability in SWR for lighter lifters, but less variability for heavier lifters. There are a few outliers of heavier lifters with low SWR.
+
+```{r}
+# Equipment usage
+lifts %>%
+  ggplot(aes(x = Equipment, y = SWR)) +
+  geom_boxplot()
+```
+
+> There is a difference in SWR between the different equipment categories. There is more variability in SWR for multi-ply and raw lifters than for other categories. There is little variability in SWR for straps lifters. There are a many outliers of single-ply and unlimited lifters with high SWR. There are a lot of outliers of wraps lifters with either very high or very low SWR.
+
+## Exercise 3: Causal diagram
+
+We are interested in the relationship between `BodyweightKg` and `SWR` but are concerned about `Age`, `Sex`, and `Equipment` as potential confounders.
+
+### Part a
+
+Draw a causal diagram that shows how these 5 variables might be related. Draw this by hand or software and save the file as `pp3_dag.jpg` or `pp3_dag.png` in the same folder as this `.qmd` file. You can then insert the diagram as below:
+
+![](pp3_dag.jpg)
+![](pp3_dag.png)
+
+### Part b
+
+Use visualizations to explore if `Age`, `Sex`, and `Equipment` have a relationship with `BodyweightKg`. Explain how these explorations relate to your causal diagram. Do you think that there are other confounders that would be important to consider but are missing from our data?
+
+```{r}
+# Age
+lifts %>%
+  ggplot(aes(x = Age, y = BodyweightKg)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+> There is a weak positive trend in bodyweight as age increases. This is consistent with the causal diagram, as age is a cause of bodyweight.
+
+```{r}
+# Sex
+lifts %>%
+  ggplot(aes(x = Sex, y = BodyweightKg)) +
+  geom_boxplot()
+```
+
+> There is a difference in bodyweight between M, F, and other. Notably, M has the highest median bodyweight and F has the lowest. This is consistent with the causal diagram. There is more variability in bodyweight for M than for F and other. There are a few outliers of M lifters with very high bodyweight. There are a lot of outliers of F lifters with high bodyweight.
+
+```{r}
+# Equipment usage
+lifts %>%
+  ggplot(aes(x = Equipment, y = BodyweightKg)) +
+  geom_boxplot()
+```
+
+> There is minimal difference in bodyweight between the different equipment categories. This is consistent with the causal diagram, as equipment does not effect bodyweight.
+
+> There are likely other confounders that would be important to consider but are missing from our data, such as diet, training, and genetics.
+
+
+## Exercise 4: Linear regression modeling
+
+Research question: Are lighter or heavier lifters proportionately stronger?
+
+Put another way, this question is getting at the causal effect of bodyweight on SWR.
+
+### Part a
+
+Fit an appropriate linear regression model that answers our research question.
+
+```{r}
+model <- lm(SWR ~ BodyweightKg + Age + Sex + Equipment, data = lifts)
+summary(model)
+```
+
+### Part b
+
+Interpret the coefficient that answers our research question. *Make sure to use appropriate causation vs. association language, include units, and talk about averages rather than individual cases.*
+
+> The coefficient for `BodyweightKg` is -0.007. This means that, on average, for every 1 kg increase in bodyweight, the SWR decreases by 0.007. This suggests that heavier lifters are proportionately weaker than lighter lifters. This is a causal interpretation, as we have controlled for confounders in our model.
+
+### Part c
+
+Interpret the remainder of the coefficients (including the intercept). Is it meaningful to interpret the intercept in this context?
+
+> The intercept is 4.80. This means that, on average, F lifters with multi-ply and a bodyweight of 0 kg has a SWR of 1.5. This is not meaningful in this context, as a lifter with a bodyweight of 0 kg is not possible.
+
+> The coefficient for `Age` is -0.031, which means that, on average, for every 1 year increase in age, the SWR decreases by 0.031.
+
+> The coefficient for `SexM` is 0.101, which means that, on average, M lifters have a SWR that is 0.101 higher than F lifters.
+
+> The coefficient for `SexMx` is -0.045, which means that, on average, other lifters have a SWR that is 0.045 lower than F lifters.
+
+> The coefficient for `EquipmentRaw` is 0.033, which means that, on average, raw lifters have a SWR that is 0.033 higher than multi-ply lifters.
+
+> The coefficient for `EquipmentSingle-ply` is 0.637, which means that, on average, single-ply lifters have a SWR that is 0.637 higher than multi-ply lifters.
+
+> The coefficient for `EquipmentStraps` is -0.714, which means that, on average, straps lifters have a SWR that is 0.714 lower than multi-ply lifters.
+
+> The coefficient for `EquipmentUnlimited` is -0.625, which means that, on average, unlimited lifters have a SWR that is 0.625 lower than multi-ply lifters.
+
+> The coefficient for `EquipmentWraps` is 1.567, which means that, on average, wraps lifters have a SWR that is 1.567 higher than multi-ply lifters.
+

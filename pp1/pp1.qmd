@@ -1,12 +1,3 @@
----
-title: "Practice Problems 1"
-author: "David Trinh"
-format:
-  html:
-    embed-resources: true
-    code-tools: true    
----
-
 <center>
 **Due Friday, 9/13 at 5pm on [Moodle](INSERT_LINK_TO_MOODLE_ASSIGNMENT).**
 </center>
@@ -126,8 +117,8 @@ bechdel %>%
 # What films had budgets that exceeded 300 million in 2013 dollars?
 # (Just show the films and budgets, not all variables)
 bechdel %>%
-    filter(budget_mil >= 300) %>%
-    select(title, budget_mil)
+    filter(budget_2013 >= 300000000) %>%
+    select(title, budget_2013)
     
 # What films were made in 1971?
 # (Just show the films and year, not all variables)
@@ -170,15 +161,9 @@ num_ok <- bechdel %>%
     nrow()
 
 num_ok / nrow(bechdel)
-
-no_talk <- bechdel %>%
-    filter(clean_test == "notalk") %>%
-    nrow()
-
-no_talk / nrow(bechdel)
 ```
 
-##### The majority of movies in the dataset did not pass the Bechdel test (44.76%). In the same vein, the majority of movies failed belong to the no talk category (28.56%).
+The majority of movies in the dataset did not pass the Bechdel test (44.76%)
 
 ## Exercise 4: How much money did it make?
 
@@ -186,35 +171,12 @@ The `intgross_mil` variable records each movie's total international gross, in m
 
 a. Construct a visualization of the `intgross_mil` variable. Summarize your findings as if you were writing a newspaper article about movies.
 
-```{r}
-ggplot(bechdel, aes(y = intgross_mil)) +
-    geom_boxplot() +
-    labs(y = "Gross by all films in millions of 2013 dollars")
-```
-
-##### The box plot indicates a high disparity of intgross between movies. The majority, represented by the box, sits at under the 1250 million dollars (2013). On the other hand, there are many outliers that makes up to 3000 million dollars.
-
 b. Calculate the mean and median values of `intgross_mil`. Explain why the mean exceeds the median by quite a bit *and* which is the more appropriate measure of trend here.
     - NOTE: Since some films are missing information on `intgross_mil`, you'll need to use `mean(___, na.rm = TRUE)` where `na.rm = TRUE` says to remove the NA (missing) values from the calculation. Similarly for the median.
-    
-```{r}
-mean(bechdel$intgross_mil, na.rm = TRUE)
-median(bechdel$intgross_mil, na.rm = TRUE)
-```
-
-##### The mean exceeds the median because of the uneven distribution of gross. In this case, few outliers at the high end with extremely high gross pull the average up. Whereas the majority of films hover around the bottom with below average gross.
 
 c. Calculate the standard deviations for the `intgross_mil` and `budget_mil` variables. Comment on whether there's more variability among how much money is spent *making* movies (budgets) or how much money a movie makes (grosses)?
 
-```{r}
-bechdel %>%
-  summarize(sd(intgross_mil,  na.rm = TRUE))
 
-bechdel %>%
-  summarize(sd(budget_mil))
-```
-
-##### The standard deviation for intgross is higher, indicating a higher variability in intgross compared to budget.
 
 ## Exercise 5: Explaining `intgross_mil`
 
@@ -222,22 +184,11 @@ Next, let's try to *explain* some of the variability in how much money films gro
 
 a. In the relationship between `intgross_mil` and `budget_mil`, which is the *response* variable?
 
-##### The response value is intgross_mil because it measures the success of the film after being produced on budget_mil. Films with higher budgets tend to have higher quality and better marketing, which implies a higher chance of success in the market.
-
 b. Construct a visualization of the relationship between `intgross_mil` and `budget_mil`. Include a regression line that represents the *trend* in this relationship.
-
-```{r}
-bechdel %>%
-  ggplot(aes(x = budget_mil, y = intgross_mil)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(x = "Budget in millions of 2014 dollars", y = "Gross in millions of 2014 dollars")
-```
-
 
 c. In 1-3 sentences, summarize your findings about this relationship as if you were writing a newspaper article about movies. Be sure to comment on both the *trend* and *variability* in this relationship.
 
-##### The data and the derived linear regression curve suggest a positive correlation relationship between budget_mil and intgross_mil.
+
 
 ## Exercise 6: Modeling `intgross_mil`
 
@@ -245,56 +196,22 @@ Let's examine the relationship between `intgross_mil` and `budget_mil` in more d
 
 a. Use `lm()` to construct a linear regression model of the *trend* in the relationship between `intgross_mil` and `budget_mil`. Store this as `movie_model` and report a model summary table.
 
-```{r}
-movie_model <- lm(intgross_mil ~ budget_mil, bechdel)
-movie_model %>%
-  summary()
-```
-
-
 b. Write out a formula for the trend.
-
-##### intgross_mil = 3.06 * budget_mil + 27.14
 
 c. Provide a newspaper appropriate interpretation of the `budget_mil` coefficient. *Make sure to use non-causal language, include units, and talk about averages rather than individual cases.*
 
-##### Budget_mil coefficient indicates that, on average, a film would gross three times its budget. To put it in persepctive, a movie with a 10 million dollars budget is predicted to gross 30 million dollars on average.
-
 d. Does it make sense to interpret the intercept in this model? Explain.
 
-##### Not in particular. The intercept is too significant in some cases (movies with low gross) and too insignificant in other cases (movies with thousands of millions in gross).
 
 
 ## Exercise 7: Predictions and residuals
 
 a. In exercise 2 you identified the budget (`budget_mil`) for the movie *Titanic*. Use the model formula above to predict its international gross. You can check your work using the `predict()` function. This provides a more accurate prediction (it doesn't round the model coefficients) so don't worry if your calculation doesn't exactly match.
 
-##### intgross_mil_pred = 3.06 * budget_mil + 27.14
-##### intgross_mil_pred = 3.06 * 290 + 27.14
-##### intgross_mil_pred = 914.54
-
 ```{r eval=FALSE}
-predict(movie_model, newdata = data.frame(budget_mil = 290))
+predict(___, newdata = data.frame(budget_mil = ___))
 ```
 
 b. Calculate the Titanic *residual*. HINT: You'll need to use the observed `intgross_mil` value from exercise 2.
 
-##### residual = intgross_mil_true - intgross_mil_pred
-##### residual = 3171.931 - 915.4517 
-##### residual = 3171.931 - 915.4517 
-##### residual = 2256.479
-
-```{r}
-intgross_mil_true <- bechdel %>%
-  filter(title == "Titanic") %>%
-  select(intgross_mil)
-
-intgross_mil_pred <- predict(movie_model, newdata = data.frame(budget_mil = 290))
-
-intgross_mil_true - intgross_mil_pred
-```
-
-
 c. Based on your calculation in part b, did the model over- or under-estimate *Titanic*'s gross?
-
-##### Because the residual was positive, the model under-estimated Titanic's gross.
